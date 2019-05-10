@@ -27,6 +27,7 @@ public class ClientController implements Publisher<Payload> {
 	for (Person person : persons) {
 	    try {
 		byte[] bytes = new ObjectMapper().writeValueAsBytes(person);
+		LOGGER.info(new String(bytes));
 		subscriber.onNext(DefaultPayload.create(bytes));
 	    } catch (Exception e) {
 		LOGGER.error("Error while sending person", e);
