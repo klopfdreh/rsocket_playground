@@ -1,11 +1,11 @@
 package de.klopfdreh.rsocket.playground;
 
 public class Person {
-    
+
     private String name;
-    
+
     private int size;
-    
+
     private int age;
 
     public String getName() {

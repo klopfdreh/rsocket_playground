@@ -3,7 +3,7 @@ package de.klopfdreh.rsocket.playground;
 public class PersonStatus {
 
     private boolean valid;
-    
+
     private Person person;
 
     public boolean isValid() {
