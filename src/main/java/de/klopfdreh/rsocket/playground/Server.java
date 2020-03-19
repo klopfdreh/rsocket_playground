@@ -36,8 +36,13 @@ public class Server {
         public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
             return Flux.from(payloads).doOnNext(payload -> {
                 LOGGER.info("Received payload: [{}]", payload.getDataUtf8());
-            }).map(payload -> serverController.processClientPayload(payload))
-                    .subscribeOn(Schedulers.parallel());
+            }).map(payload -> {
+                try {
+                    return serverController.processClientPayload(payload);
+                } finally {
+                    payload.release();
+                }
+            }).subscribeOn(Schedulers.parallel());
         }
     }
 

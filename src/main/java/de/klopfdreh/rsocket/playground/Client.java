@@ -26,8 +26,13 @@ public class Client {
 
     public void sendPersons(List<Person> persons) {
         ClientController clientController = new ClientController(persons);
-        this.socket.requestChannel(Flux.from(clientController)).doOnNext(clientController::processServerPayload)
-                .blockLast();
+        this.socket.requestChannel(Flux.from(clientController)).doOnNext(payload -> {
+            try {
+                clientController.processServerPayload(payload);
+            } finally {
+                payload.release();
+            }
+        }).blockLast();
     }
 
     public void dispose() {
