@@ -32,15 +32,15 @@ public class Server {
     private class RSocketImpl extends AbstractRSocket {
         @Override
         public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
-            return Flux.from(payloads).doOnNext(payload -> {
-                log.info("Received payload: [{}]", payload.getDataUtf8());
-            }).map(payload -> {
-                try {
-                    return serverController.processClientPayload(payload);
-                } finally {
-                    payload.release();
-                }
-            }).subscribeOn(Schedulers.parallel());
+            return Flux.from(payloads)
+                    .doOnNext(payload -> log.info("Received payload from client: [{}]", payload.getDataUtf8()))
+                    .map(payload -> {
+                        try {
+                            return serverController.processClientPayload(payload);
+                        } finally {
+                            payload.release();
+                        }
+                    }).subscribeOn(Schedulers.parallel());
         }
     }
 

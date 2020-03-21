@@ -17,7 +17,7 @@ public class ServerController {
             personStatusSingle.setPerson(objectMapper.readValue(payloadString, Person.class));
             personStatusSingle.setValid(true);
             byte[] bytes = objectMapper.writeValueAsBytes(personStatusSingle);
-            log.info("processClientPayload: [{}]", payloadString);
+            log.info("processClientPayload: [{}]", new String(bytes));
             return DefaultPayload.create(bytes);
         } catch (Exception e) {
             log.error("Error while reading client payload.", e);
