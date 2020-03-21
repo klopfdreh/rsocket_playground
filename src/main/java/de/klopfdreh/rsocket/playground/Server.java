@@ -5,17 +5,15 @@ import io.rsocket.Payload;
 import io.rsocket.RSocketFactory;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.server.TcpServerTransport;
+import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+@Slf4j
 public class Server {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
     private Disposable server;
 
@@ -27,7 +25,7 @@ public class Server {
         this.server = RSocketFactory.receive().frameDecoder(PayloadDecoder.ZERO_COPY)
                 .acceptor((setupPayload, reactiveSocket) -> Mono.just(new RSocketImpl()))
                 .transport(TcpServerTransport.create("localhost", TCP_PORT)).start()
-                .doOnNext(x -> LOGGER.info("Server started.")).subscribe();
+                .doOnNext(x -> log.info("Server started.")).subscribe();
         this.serverController = new ServerController();
     }
 
@@ -35,7 +33,7 @@ public class Server {
         @Override
         public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
             return Flux.from(payloads).doOnNext(payload -> {
-                LOGGER.info("Received payload: [{}]", payload.getDataUtf8());
+                log.info("Received payload: [{}]", payload.getDataUtf8());
             }).map(payload -> {
                 try {
                     return serverController.processClientPayload(payload);
@@ -47,7 +45,7 @@ public class Server {
     }
 
     public void dispose() {
-        LOGGER.info("Server stopped.");
+        log.info("Server stopped.");
         this.server.dispose();
     }
 }

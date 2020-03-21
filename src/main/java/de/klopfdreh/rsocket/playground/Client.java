@@ -4,15 +4,13 @@ import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
 
+@Slf4j
 public class Client {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
     private RSocket socket;
 
@@ -21,7 +19,7 @@ public class Client {
     public Client() {
         this.socket = RSocketFactory.connect().frameDecoder(PayloadDecoder.ZERO_COPY)
                 .transport(TcpClientTransport.create("localhost", TCP_PORT)).start()
-                .doOnNext(x -> LOGGER.info("Client started.")).block();
+                .doOnNext(x -> log.info("Client started.")).block();
     }
 
     public void sendPersons(List<Person> persons) {
@@ -36,7 +34,7 @@ public class Client {
     }
 
     public void dispose() {
-        LOGGER.info("Client stopped.");
+        log.info("Client stopped.");
         this.socket.dispose();
     }
 }
