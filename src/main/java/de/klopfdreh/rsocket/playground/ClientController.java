@@ -5,8 +5,6 @@ import io.rsocket.Payload;
 import io.rsocket.util.DefaultPayload;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-
 @Slf4j
 public class ClientController {
 
@@ -19,7 +17,7 @@ public class ClientController {
             return DefaultPayload.create(bytes);
         } catch (Exception e) {
             log.error("Error while sending person.", e);
-            throw new IllegalStateException("Error while sending person.",e);
+            throw new IllegalStateException("Error while sending person.", e);
         }
     }
 
