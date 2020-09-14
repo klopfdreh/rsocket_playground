@@ -1,12 +1,14 @@
 package de.klopfdreh.rsocket.playground;
 
+import io.rsocket.Payload;
 import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
+import io.rsocket.core.RSocketConnector;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -16,15 +18,22 @@ public class Client {
 
     private final int TCP_PORT = 7000;
 
+    private ClientController clientController;
+
     public Client() {
-        this.socket = RSocketFactory.connect().frameDecoder(PayloadDecoder.ZERO_COPY)
-                .transport(TcpClientTransport.create("localhost", TCP_PORT)).start()
-                .doOnNext(x -> log.info("Client started.")).block();
+        this.clientController = new ClientController();
+        this.socket = RSocketConnector
+                .create()
+                .payloadDecoder(PayloadDecoder.ZERO_COPY)
+                .dataMimeType("application/json")
+                .connect(TcpClientTransport.create("localhost", TCP_PORT))
+                .doOnNext(x -> log.info("Client started."))
+                .block();
     }
 
     public void sendPersons(List<Person> persons) {
-        ClientController clientController = new ClientController(persons);
-        this.socket.requestChannel(Flux.from(clientController))
+        Flux<Payload> requestPayloads = Flux.fromIterable(persons).map(clientController::createClientPayload);
+        this.socket.requestChannel(requestPayloads)
                 .doOnNext(payload -> log.info("Received payload from server: [{}]", payload.getDataUtf8()))
                 .doOnNext(payload -> {
                     try {

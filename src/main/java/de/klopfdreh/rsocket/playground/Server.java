@@ -1,15 +1,15 @@
 package de.klopfdreh.rsocket.playground;
 
-import io.rsocket.AbstractRSocket;
 import io.rsocket.Payload;
-import io.rsocket.RSocketFactory;
+import io.rsocket.RSocket;
+import io.rsocket.SocketAcceptor;
+import io.rsocket.core.RSocketServer;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 @Slf4j
@@ -22,14 +22,16 @@ public class Server {
     private ServerController serverController;
 
     public Server() {
-        this.server = RSocketFactory.receive().frameDecoder(PayloadDecoder.ZERO_COPY)
-                .acceptor((setupPayload, reactiveSocket) -> Mono.just(new RSocketImpl()))
-                .transport(TcpServerTransport.create("localhost", TCP_PORT)).start()
-                .doOnNext(x -> log.info("Server started.")).subscribe();
+        server = RSocketServer
+                .create(SocketAcceptor.with(new RSocketImpl()))
+                .payloadDecoder(PayloadDecoder.ZERO_COPY)
+                .bind(TcpServerTransport.create("localhost", TCP_PORT))
+                .doOnNext(x -> log.info("Server started."))
+                .subscribe();
         this.serverController = new ServerController();
     }
 
-    private class RSocketImpl extends AbstractRSocket {
+    private class RSocketImpl implements RSocket {
         @Override
         public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
             return Flux.from(payloads)
