@@ -4,34 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.rsocket.Payload;
 import io.rsocket.util.DefaultPayload;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 
 import java.util.List;
 
 @Slf4j
-public class ClientController implements Publisher<Payload> {
+public class ClientController {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private List<Person> persons;
-
-    public ClientController(List<Person> persons) {
-        this.persons = persons;
-    }
-
-    @Override
-    public void subscribe(Subscriber<? super Payload> subscriber) {
-        for (Person person : persons) {
-            try {
-                byte[] bytes = objectMapper.writeValueAsBytes(person);
-                log.info("subscribe: [{}]", new String(bytes));
-                subscriber.onNext(DefaultPayload.create(bytes));
-            } catch (Exception e) {
-                log.error("Error while sending person.", e);
-            }
+    public Payload createClientPayload(Person person) {
+        try {
+            byte[] bytes = objectMapper.writeValueAsBytes(person);
+            log.info("subscribe: [{}]", new String(bytes));
+            return DefaultPayload.create(bytes);
+        } catch (Exception e) {
+            log.error("Error while sending person.", e);
+            throw new IllegalStateException("Error while sending person.",e);
         }
-        subscriber.onComplete();
     }
 
     public void processServerPayload(Payload payload) {
