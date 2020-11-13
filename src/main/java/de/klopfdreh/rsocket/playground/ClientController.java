@@ -13,7 +13,7 @@ public class ClientController {
     public Payload createClientPayload(Person person) {
         try {
             byte[] bytes = objectMapper.writeValueAsBytes(person);
-            log.info("subscribe: [{}]", new String(bytes));
+            log.info("createClientPayload: [{}]", new String(bytes));
             return DefaultPayload.create(bytes);
         } catch (Exception e) {
             log.error("Error while sending person.", e);
